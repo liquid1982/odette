@@ -1,0 +1,20 @@
+{
+  "markers": [
+    {
+      "title": "First event",
+      "coords": [42, 13]
+    }, {
+      "title": "Second event",
+      "coords": [42.4, 13.1]
+    }, {
+      "title": "Third event",
+      "coords": [42.2, 13.4]
+    }, {
+      "title": "Fourth event",
+      "coords": [42.9, 13.9]
+    }, {
+      "title": "Fifth event",
+      "coords": [42.5, 13.3]
+    }
+  ]
+}
