@@ -1,7 +1,23 @@
-body { margin:0; padding:0; }
-#my-map {
-  position: absolute;
-  top: 0;
-  bottom: 50%;
-  width: 100%;
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+#main-menu {
+  height: 50px;
+  background-color: #eee;
+}
+
+#map {
+  height: 300px;
+}
+
+#date-selector {
+  height: 50px;
+  background-color: #eee;
+}
+
+#content {
+  padding: 10px;
 }

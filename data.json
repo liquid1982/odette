@@ -2,19 +2,19 @@
   "markers": [
     {
       "title": "First event",
-      "coords": [42, 13]
+      "coords": [45.466958, 9.189991]
     }, {
       "title": "Second event",
-      "coords": [42.4, 13.1]
+      "coords": [45.463499, 9.137190]
     }, {
       "title": "Third event",
-      "coords": [42.2, 13.4]
+      "coords": [45.524782, 9.213489]
     }, {
       "title": "Fourth event",
-      "coords": [42.9, 13.9]
+      "coords": [45.456958, 9.187991]
     }, {
       "title": "Fifth event",
-      "coords": [42.5, 13.3]
+      "coords": [45.486958, 9.139991]
     }
   ]
 }
