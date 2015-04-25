@@ -61,6 +61,11 @@ var fetchVenues = function(path, callback) {
   // Il terzo, `body`, conterrà l'HTML della pagina dal quale dovremo estrarre le
   // informazioni che cerchiamo.
   request(baseUrl + path, function(error, response, body) {
+    if (error) {
+      callback(error, venues);
+      return;
+    }
+
     // Salvo all'interno di `elements` tutti gli elementi HTML che contengono
     // le informazioni sui teatri. Per individuarli, uso un selettore CSS
     // che passo come primo argomento alla funzione cheerio. Il secondo argomento
@@ -209,6 +214,11 @@ var fetchVenues = function(path, callback) {
 //   }
 //
 async.map(paths, fetchVenues, function(error, result) {
+  if (error) {
+    console.log("Error fetching pages.", error);
+    return;
+  }
+
   // Prima di scrivere il nostro file, dobbiamo lavorare su `result`.
   // Avrà una struttura del genere:
   //
@@ -279,10 +289,11 @@ async.map(paths, fetchVenues, function(error, result) {
   // Utilizziamo questa funzione semplicemente per visualizzare un messaggio che ci conferma
   // l'avvenuta scrittura, oppure un eventuale problema.
   fs.writeFile('venues.json', JSONString, function(error) {
-    if (!error) {
-      console.log(venues.length, 'venues have been written to venues.json!');
-    } else {
-      console.log('Error writing venues.json!', error);
+    if (error) {
+      console.log("Error writing venues.json", error);
+      return;
     }
+
+    console.log(venues.length + ' venues have been written to venues.json!');
   });
 });
