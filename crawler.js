@@ -1,7 +1,7 @@
-var fs = require('fs');
 var request = require('request');
 var cheerio = require('cheerio');
 var async = require('async');
+var fs = require('fs');
 
 var baseUrl = 'http://www.milanodabere.it';
 var paths = [
