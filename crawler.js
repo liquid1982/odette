@@ -46,13 +46,17 @@ var paths = [
 // visiterà il crawler. Come argomento passeremo un path.
 
 var fetchVenues = function(path, callback) {
+  // Definisco un array vuoto `venues` all'interno del quale memorizzerò tutti i teatri
+  // che troverò nella pagina corrente.
 
-  // La funzione request accetta come primo argomento un indirizzo web completo
+  var venues = [];
+
+  // La funzione `request` accetta come primo argomento un indirizzo web completo
   // (es. http://www.milanodabere.it/milano/teatri), e come secondo argomento
   // una funzione di callback che sarà eseguita nel momento in cui il server
   // avrà risposto con un documento HTML.
   // Questa funzione di callback, a sua volta, sarà invocata con tre parametri.
-  // Il primo, `error`, conterrà undefined se tutto è andato per il verso giusto,
+  // Il primo, `error`, conterrà `undefined` se il server risponderà correttamente,
   // altrimenti conterrà un oggetto che descriverà l'errore.
   // Il secondo, `response`, conterrà un oggetto che descrive la risposta HTTP che ci è
   // stata inviata dal server.
@@ -60,12 +64,7 @@ var fetchVenues = function(path, callback) {
   // informazioni che cerchiamo.
 
   request(baseUrl + path, function(error, response, body) {
-    // Definisco un array vuoto all'interno del quale memorizzerò tutti i teatri
-    // che ho trovato nella pagina corrente.
-
-    var venues = [];
-
-    // Salvo, all'interno di `elements`, tutti gli elementi HTML che contengono
+    // Salvo all'interno di `elements` tutti gli elementi HTML che contengono
     // le informazioni sui teatri. Per individuarli, uso un selettore CSS
     // che passo come primo argomento alla funzione cheerio. Il secondo argomento
     // passato è `body`, che contiene l'HTML della pagina.
@@ -89,7 +88,7 @@ var fetchVenues = function(path, callback) {
       //
       //    <a href="/includes/ros/modal/mappe/index.asp?Latitudine=45.4671450&Longitudine=9.1979533&Nome_Location=Teatro+San+Babila" data-toggle="modal" data-target="#mdb_modal_mappa" role="button" rel="nofollow">Apri Mappa</a>
       //
-      // e a noi serve `Latitudine` e `Longitudine`.
+      // e a noi serve estrarre i valori di `Latitudine` e `Longitudine`.
 
       var addressLink;
 
@@ -143,7 +142,7 @@ var fetchVenues = function(path, callback) {
       //    ]
       //
       // che assegno alla variabile `tokens`. In `tokens[1]` ci sarà la porzione di stringa che mi interessa,
-      // e sulla quale andrò avanti a lavorare.
+      // sulla quale andrò avanti a lavorare.
       //
       // A questo punto, devo continuare a spezzettare. Dentro `tokens[1]` ho
       //
@@ -184,7 +183,7 @@ var fetchVenues = function(path, callback) {
 
       latitude = latitude[1];
 
-      // Stessa storia per la longitudine.
+      // Stessa storia per la longitudine, che si trova in `tokens[1]`.
 
       longitude = tokens[1].split('=')[1];
 
@@ -216,7 +215,7 @@ var fetchVenues = function(path, callback) {
 // chiamate a `fetchVenues`). Quando tutte queste callback saranno state eseguite ed avranno
 // restituito un valore, verrà invocata la funzione passata come terzo argomento ad `async.map`.
 //
-// Questa callback viene invocata con due argomenti.
+// Questa callback sarà invocata con due argomenti.
 // Il primo è `error`, e contiene un oggetto che rappresenta un eventuale errore oppure `undefined`
 // se non ci sono stati errori. Il secondo è `result`, che è un array che contiene i valori
 // restituiti da tutte le chiamate a `fetcVenues`. Per ogni pagina, il risultato di questa funzione
@@ -229,11 +228,10 @@ var fetchVenues = function(path, callback) {
 //       9.1825041
 //     ]
 //   }
-//
 
 async.map(paths, fetchVenues, function(error, result) {
 
-  // Prima di scrivere il nostro file, dobbiamo lavorare su `result.`
+  // Prima di scrivere il nostro file, dobbiamo lavorare su `result`.
   // Avrà una struttura del genere:
   //
   //    [
@@ -279,10 +277,17 @@ async.map(paths, fetchVenues, function(error, result) {
   //    ]
   //
   // Siccome `result` è un array che contiene a sua volta altri array,
-  // decido di "appiattirlo" con questa tecnica.
-
-  var venues = result.reduce(function(a, b) {
-    return a.concat(b);
+  // è necessario "appiattirlo" con questa tecnica.
+  //
+  // La funzione `reduce` può essere invocata su un array. Ci permette di applicare
+  // una callback su ogni elemento dell'array, e di memorizzare il valore ritornato dalla
+  // callback in un contenitore, detto "accumulatore", che sarà ritornato quando la funzione
+  // sarà stata applicata a tutti gli elementi dell'array. L'accumulatore è il primo parametro,
+  // `accumulator`, e l'elemento corrente è il secondo, `currentElement`.
+  // Il risultato che sarà ritornato dalla funzione reduce sarà quindi il concatenamento di tutti
+  // gli array contenuti in `result`.
+  var venues = result.reduce(function(accumulator, currentElement) {
+    return accumulator.concat(currentElement);
   });
 
   // Prima di scrivere il file, devo trasformare la mia struttura dati in una stringa.
@@ -290,16 +295,16 @@ async.map(paths, fetchVenues, function(error, result) {
 
   var JSONString = JSON.stringify({ venues: venues }, null, 2);
 
-  // Utilizzo la funzione `writeFile` di `fs` per salvare il mio file.
+  // Per finire, usiamo la funzione `writeFile` di `fs` per scrivere il file.
   // Il primo argomento è il percorso del file (che sarà salvato nella
-  // stessa cartella del file crawler.js). Il secondo argomento è il contenuto del file,
+  // stessa cartella di crawler.js). Il secondo argomento è il contenuto del file,
   // il terzo argomento è invece una funzione che viene eseguita alla fine della scrittura.
   // Utilizziamo questa funzione semplicemente per visualizzare un messaggio che ci conferma
-  // l'avvenuta scrittura oppure un eventuale problema.
+  // l'avvenuta scrittura, oppure un eventuale problema.
 
   fs.writeFile('venues.json', JSONString, function(error) {
     if (!error) {
-      console.log('All venues have been written to venues.json file!');
+      console.log(venues.length, 'venues have been written to venues.json!');
     } else {
       console.log('Error writing venues.json!', error);
     }
