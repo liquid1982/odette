@@ -14,19 +14,19 @@
  * per salvare sul file `venues.json` la lista dei teatri.
  */
 
-// request è una libreria che ci permette di fare chiamate HTTP.
+// `request` è una libreria che ci permette di fare chiamate HTTP.
 var request = require('request');
 
-// cheerio serve per estrarre informazioni da un documento HTML.
+// `cheerio` serve per estrarre informazioni da un documento HTML.
 // È molto simile a jQuery e ci permette di selezionare nodi HTML
 // utilizzando dei selettori CSS.
 var cheerio = require('cheerio');
 
-// async è una libreria che ci permette di gestire le callback.
+// `async` è una libreria che ci permette di gestire le callback.
 // Più avanti nel file vedremo di cosa si tratta.
 var async = require('async');
 
-// fs è una libreria per leggere e scrivere files. Ci servirà per
+// `fs` è una libreria per leggere e scrivere files. Ci servirà per
 // salvare il file JSON contenente l'elenco dei teatri.
 var fs = require('fs');
 
@@ -44,11 +44,9 @@ var paths = [
 
 // Qui definisco una funzione da eseguire per ciascuna delle pagine che
 // visiterà il crawler. Come argomento passeremo un path.
-
 var fetchVenues = function(path, callback) {
   // Definisco un array vuoto `venues` all'interno del quale memorizzerò tutti i teatri
   // che troverò nella pagina corrente.
-
   var venues = [];
 
   // La funzione `request` accetta come primo argomento un indirizzo web completo
@@ -62,24 +60,20 @@ var fetchVenues = function(path, callback) {
   // stata inviata dal server.
   // Il terzo, `body`, conterrà l'HTML della pagina dal quale dovremo estrarre le
   // informazioni che cerchiamo.
-
   request(baseUrl + path, function(error, response, body) {
     // Salvo all'interno di `elements` tutti gli elementi HTML che contengono
     // le informazioni sui teatri. Per individuarli, uso un selettore CSS
     // che passo come primo argomento alla funzione cheerio. Il secondo argomento
     // passato è `body`, che contiene l'HTML della pagina.
-
     var elements = cheerio('#mdb_lista > article', body);
 
     // Per ciascuno degli elementi trovati eseguo una funzione, che sarà
     // invocata con due argomenti: il primo è l'indice, il secondo è l'elemento corrente
     // nel ciclo.
-
     elements.each(function(index, element) {
 
       // Definisco un oggetto `venue` all'interno del quale salverò le informazioni
       // che mi servono.
-
       var venue = {};
 
       // Dichiaro una variabile `addressLink` all'interno della quale salverò il link
@@ -89,36 +83,30 @@ var fetchVenues = function(path, callback) {
       //    <a href="/includes/ros/modal/mappe/index.asp?Latitudine=45.4671450&Longitudine=9.1979533&Nome_Location=Teatro+San+Babila" data-toggle="modal" data-target="#mdb_modal_mappa" role="button" rel="nofollow">Apri Mappa</a>
       //
       // e a noi serve estrarre i valori di `Latitudine` e `Longitudine`.
-
       var addressLink;
 
       // Definisco una variabile `tokens` all'interno della quale salverò, volta per volta,
       // dei "pezzi" di stringa. Mi servirà per arrivare ad ottenere i valori di
       // `Latitudine` e `Longitudine`.
-
       var tokens;
 
       // Definisco due variabili, `latitude` e `longitude`, in cui salverò questi valori.
-
       var latitude, longitude;
 
       // Per prima cosa salvo in `venue.name` il nome del teatro.
       // Utilizzo cheerio per trovare, tramite un selettore CSS, l'elemento HTML che
       // contiene il nome del teatro. Sul risultato della chiamta a cheerio, chiamo
       // il metodo `.text()` che mi restituisce il contenuto del nodo HTML.
-
       venue.name = cheerio('header h1 > a', element).text();
 
       // Per le coordinate c'è da fare un po' di lavoro in più.
       // Utilizzo ancora cheerio per trovare l'elemento HTML che contiene le coordinate.
       // Passo come primo argomento il selettore, e come secondo il nodo HTML che
       // contiene l'elemento.
-
       addressLink = cheerio('header .media-body aside a[data-target="#mdb_modal_mappa"]', element);
 
       // Una volta trovato l'elemento, riassegno alla variabile addressLink il contenuto
       // del suo attributo `href`.
-
       addressLink = addressLink.attr('href');
 
       // A questo punto, all'interno di `addressLink` avrò:
@@ -131,7 +119,6 @@ var fetchVenues = function(path, callback) {
       // alle informazioni di cui ho bisogno. Per prima cosa, quindi, divido in due la stringa scegliendo come
       // carattere di separazione il punto di domanda `?`, che in una URL demarca il punto di inizio della
       // query string. Per farlo uso la funzione `split` di String.
-
       tokens = addressLink.split('?');
 
       // Il risultato sarà un array di due elementi:
@@ -150,7 +137,6 @@ var fetchVenues = function(path, callback) {
       //
       // che è un elenco di parametri. In una URL, i parametri sono separati dalla e commerciale `&`.
       // Uso di nuovo la funzione `split` di String:
-
       tokens = tokens[1].split('&');
 
       // e questa volta ottengo un array di tre elementi:
@@ -166,7 +152,6 @@ var fetchVenues = function(path, callback) {
       //
       // Per tirare fuori la latitudine, devo ulteriormente spezzettare la stringa `tokens[0]`,
       // questa volta utilizzando come carattere di separazione `=`.
-
       latitude = tokens[0].split('=');
 
       //
@@ -180,11 +165,9 @@ var fetchVenues = function(path, callback) {
       //
       // Quello che cerco è, finalmente, nel secondo elemento di questo array. Riassegno questo valore
       // alla variabile `latitude`.
-
       latitude = latitude[1];
 
       // Stessa storia per la longitudine, che si trova in `tokens[1]`.
-
       longitude = tokens[1].split('=')[1];
 
       // A questo punto, memorizzo in `venue.coords` le informazioni che ho trovato.
@@ -192,21 +175,18 @@ var fetchVenues = function(path, callback) {
       // Per assicurarmi che l'array contenga dei valori numerici e non delle stringhe,
       // utilizzo la funzione `parseFloat`, che prende come argomento una stringa e restituisce
       // un numero (preservando i decimali).
-
       venue.coords = [
         parseFloat(latitude),
         parseFloat(longitude)
       ];
 
       // Come ultima operazione, inserisco in coda all'array `venues` il mio oggetto `venue`.
-
       venues.push(venue);
     });
 
     // Dopo aver finito di ciclare sugli elementi, invoco la callback che viene passata alla funzione
     // `fetchVenues`. In questo modo comunico alla libreria `async` che ho terminato la
     // mia operazione. Passo come secondo argomento il risultato, che è il mio array `venues`.
-
     callback(null, venues);
   });
 }
@@ -228,7 +208,7 @@ var fetchVenues = function(path, callback) {
 //       9.1825041
 //     ]
 //   }
-
+//
 async.map(paths, fetchVenues, function(error, result) {
 
   // Prima di scrivere il nostro file, dobbiamo lavorare su `result`.
@@ -292,7 +272,6 @@ async.map(paths, fetchVenues, function(error, result) {
 
   // Prima di scrivere il file, devo trasformare la mia struttura dati in una stringa.
   // Lo faccio utilizzando `JSON.stringify`.
-
   var JSONString = JSON.stringify({ venues: venues }, null, 2);
 
   // Per finire, usiamo la funzione `writeFile` di `fs` per scrivere il file.
@@ -301,7 +280,6 @@ async.map(paths, fetchVenues, function(error, result) {
   // il terzo argomento è invece una funzione che viene eseguita alla fine della scrittura.
   // Utilizziamo questa funzione semplicemente per visualizzare un messaggio che ci conferma
   // l'avvenuta scrittura, oppure un eventuale problema.
-
   fs.writeFile('venues.json', JSONString, function(error) {
     if (!error) {
       console.log(venues.length, 'venues have been written to venues.json!');
