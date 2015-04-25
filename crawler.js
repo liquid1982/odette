@@ -3,7 +3,7 @@
  * ---
  * Prima di eseguire questo file, è necessario lanciare il comando
  *
- *   npm init
+ *   npm install
  *
  * che serve ad installare le dipendenze necessarie.
  *
