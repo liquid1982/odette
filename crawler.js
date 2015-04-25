@@ -1,5 +1,17 @@
 /**
- * Esempio di crawler per salvare l'elenco dei teatri di Milanodabere.
+ * Esempio di crawler per salvare l'elenco dei teatri da Milanodabere.
+ * ---
+ * Prima di eseguire questo file, è necessario lanciare il comando
+ *
+ *   npm init
+ *
+ * che serve ad installare le dipendenze necessarie.
+ *
+ * Successivamente, basterà eseguire
+ *
+ *   node crawler.js
+ *
+ * per salvare sul file `venues.json` la lista dei teatri.
  */
 
 // request è una libreria che ci permette di fare chiamate HTTP.
@@ -166,7 +178,7 @@ var fetchVenues = function(path, callback) {
       //      "45.4671450"
       //    ]
       //
-
+      //
       // Quello che cerco è, finalmente, nel secondo elemento di questo array. Riassegno questo valore
       // alla variabile `latitude`.
 
@@ -203,15 +215,71 @@ var fetchVenues = function(path, callback) {
 
 // Utilizzando la libreria async, metto in coda una serie di callback (che sono le mie
 // chiamate a `fetchVenues`). Quando tutte queste callback saranno state eseguite ed avranno
-// restituito un valore, posso eseguire la funzione che viene passata come terzo argomento
-// ad `async.map`. Questa callback viene invocata con due argomenti:
-// il primo è `error`, che contiene un oggetto che rappresenta un eventuale errore oppure undefined
+// restituito un valore, verrà invocata funzione passata come terzo argomento ad `async.map`.
+//
+// Questa callback viene invocata con due argomenti.
+// Il primo è `error`, e contiene un oggetto che rappresenta un eventuale errore oppure `undefined`
 // se non ci sono stati errori. Il secondo è `result`, che è un array che contiene i valori
-// restituiti da tutte le chiamate a `fetcVenues`.
+// restituiti da tutte le chiamate a `fetcVenues`. Per ogni pagina, il risultato di questa funzione
+// sarà un array con dentro una serie di oggetti venue:
+//
+//   {
+//     "name": "Teatro Strehler, Milano",
+//     "coords": [
+//       45.4720884,
+//       9.1825041
+//     ]
+//   }
+//
 
 async.map(paths, fetchVenues, function(error, result) {
 
-  // Siccome `result` è un array che contiene a sua volta diversi array,
+  // Prima di scrivere il nostro file, dobbiamo lavorare su `result.`
+  // Avrà una struttura del genere:
+  //
+  //    [
+  //      [
+  //        {
+  //          "name": "Teatro Strehler, Milano",
+  //          "coords": [
+  //            45.4720884,
+  //            9.1825041
+  //          ]
+  //        },
+  //        {
+  //          "name": "Teatro Grassi, Milano",
+  //          "coords": [
+  //            45.4664684,
+  //            9.1847167
+  //          ]
+  //        },
+  //        {
+  //          ...
+  //        }
+  //      ],
+  //
+  //      [
+  //        {
+  //          "name": "Piccolo Teatro Studio Melato, Milano",
+  //          "coords": [
+  //            45.4723771,
+  //            9.1829
+  //          ]
+  //        },
+  //        {
+  //          "name": "Teatro Franco Parenti, Milano",
+  //          "coords": [
+  //            45.4544416,
+  //            9.2059056
+  //          ]
+  //        },
+  //        {
+  //          ...
+  //        }
+  //      ]
+  //    ]
+  //
+  // Siccome `result` è un array che contiene a sua volta altri array,
   // decido di "appiattirlo" con questa tecnica.
 
   var venues = result.reduce(function(a, b) {
