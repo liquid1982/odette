@@ -71,7 +71,6 @@ var fetchVenues = function(path, callback) {
     // invocata con due argomenti: il primo è l'indice, il secondo è l'elemento corrente
     // nel ciclo.
     elements.each(function(index, element) {
-
       // Definisco un oggetto `venue` all'interno del quale salverò le informazioni
       // che mi servono.
       var venue = {};
@@ -210,7 +209,6 @@ var fetchVenues = function(path, callback) {
 //   }
 //
 async.map(paths, fetchVenues, function(error, result) {
-
   // Prima di scrivere il nostro file, dobbiamo lavorare su `result`.
   // Avrà una struttura del genere:
   //
