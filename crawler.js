@@ -14,6 +14,10 @@
  * per salvare sul file `venues.json` la lista dei teatri.
  */
 
+/**
+ * Sezione 1: Dipendenze
+ */
+
 // `request` è una libreria che ci permette di fare chiamate HTTP.
 var request = require('request');
 
@@ -30,21 +34,22 @@ var async = require('async');
 // salvare il file JSON contenente l'elenco dei teatri.
 var fs = require('fs');
 
-// Per prima cosa definisco una URL di base...
-var baseUrl = 'http://www.milanodabere.it';
+/**
+ * Sezione 2: Implementazione
+ */
 
-// ...ed un elenco di pagine in cui mi aspetto di trovare le informazioni.
-var paths = [
-  '/milano/teatri',
-  '/milano/teatri/2',
-  '/milano/teatri/3',
-  '/milano/teatri/4',
-  '/milano/teatri/5'
+// Definisco un array che contiene un elenco di pagine in cui mi aspetto di trovare le informazioni.
+var urls = [
+  'http://www.milanodabere.it/milano/teatri',
+  'http://www.milanodabere.it/milano/teatri/2',
+  'http://www.milanodabere.it/milano/teatri/3',
+  'http://www.milanodabere.it/milano/teatri/4',
+  'http://www.milanodabere.it/milano/teatri/5'
 ];
 
-// Qui definisco una funzione da eseguire per ciascuna delle pagine che
-// visiterà il crawler. Come argomento passeremo un path.
-var fetchVenues = function(path, callback) {
+// Definisco la funzione `fetchVenues`, che sarà eseguita su ciascuna delle pagine che
+// saranno visitate dal crawler. Sarà invocata con due parametri, `url` e `callback`.
+var fetchVenues = function(url, callback) {
   // Definisco un array vuoto `venues` all'interno del quale memorizzerò tutti i teatri
   // che troverò nella pagina corrente.
   var venues = [];
@@ -60,7 +65,7 @@ var fetchVenues = function(path, callback) {
   // stata inviata dal server.
   // Il terzo, `body`, conterrà l'HTML della pagina dal quale dovremo estrarre le
   // informazioni che cerchiamo.
-  request(baseUrl + path, function(error, response, body) {
+  request(url, function(error, response, body) {
     if (error) {
       callback(error, venues);
       return;
@@ -158,14 +163,12 @@ var fetchVenues = function(path, callback) {
       // questa volta utilizzando come carattere di separazione `=`.
       latitude = tokens[0].split('=');
 
-      //
       // Il risultato sarà:
       //
       //    [
       //      "Latitudine",
       //      "45.4671450"
       //    ]
-      //
       //
       // Quello che cerco è, finalmente, nel secondo elemento di questo array. Riassegno questo valore
       // alla variabile `latitude`.
@@ -175,7 +178,6 @@ var fetchVenues = function(path, callback) {
       longitude = tokens[1].split('=')[1];
 
       // A questo punto, memorizzo in `venue.coords` le informazioni che ho trovato.
-      //
       // Per assicurarmi che l'array contenga dei valori numerici e non delle stringhe,
       // utilizzo la funzione `parseFloat`, che prende come argomento una stringa e restituisce
       // un numero (preservando i decimali).
@@ -195,85 +197,77 @@ var fetchVenues = function(path, callback) {
   });
 }
 
-// Utilizzando la libreria async, metto in coda una serie di callback (che sono le mie
-// chiamate a `fetchVenues`). Quando tutte queste callback saranno state eseguite ed avranno
-// restituito un valore, verrà invocata la funzione passata come terzo argomento ad `async.map`.
+// Definisco la funzione `saveVenues`, che sarà invocata da `async.map` una volta che tutte le pagine
+// saranno state visitate dal crawler.
 //
-// Questa callback sarà invocata con due argomenti.
-// Il primo è `error`, e contiene un oggetto che rappresenta un eventuale errore oppure `undefined`
-// se non ci sono stati errori. Il secondo è `result`, che è un array che contiene i valori
-// restituiti da tutte le chiamate a `fetcVenues`. Per ogni pagina, il risultato di questa funzione
-// sarà un array con dentro una serie di oggetti venue:
+// Sarà invocata con due parametri. Il primo è `error`, e contiene un oggetto che rappresenta un
+// eventuale errore oppure `undefined` se non ci sono stati errori.
+// Il secondo è `result`, che è un array che contiene i valori restituiti da tutte le chiamate a `fetchVenues`.
 //
-//   {
-//     "name": "Teatro Strehler, Milano",
-//     "coords": [
-//       45.4720884,
-//       9.1825041
+// Ciascuna chiamata a `fetchVenues` restituisce a sua volta un array, quindi `result`
+// avrà una struttura del genere:
+//
+//   [
+//     [
+//       {
+//         "name": "Teatro Strehler, Milano",
+//         "coords": [
+//           45.4720884,
+//           9.1825041
+//         ]
+//       },
+//       {
+//         "name": "Teatro Grassi, Milano",
+//         "coords": [
+//           45.4664684,
+//           9.1847167
+//         ]
+//       },
+//       {
+//         ...
+//       }
+//     ],
+//
+//     [
+//       {
+//         "name": "Piccolo Teatro Studio Melato, Milano",
+//         "coords": [
+//           45.4723771,
+//           9.1829
+//         ]
+//       },
+//       {
+//         "name": "Teatro Franco Parenti, Milano",
+//         "coords": [
+//           45.4544416,
+//           9.2059056
+//         ]
+//       },
+//       {
+//         ...
+//       }
 //     ]
-//   }
+//   ]
 //
-async.map(paths, fetchVenues, function(error, result) {
+// ossia un array di array (anche detto "array bidimensionale").
+var saveVenues = function(error, result) {
   if (error) {
     console.log("Error fetching pages.", error);
     return;
   }
 
   // Prima di scrivere il nostro file, dobbiamo lavorare su `result`.
-  // Avrà una struttura del genere:
-  //
-  //    [
-  //      [
-  //        {
-  //          "name": "Teatro Strehler, Milano",
-  //          "coords": [
-  //            45.4720884,
-  //            9.1825041
-  //          ]
-  //        },
-  //        {
-  //          "name": "Teatro Grassi, Milano",
-  //          "coords": [
-  //            45.4664684,
-  //            9.1847167
-  //          ]
-  //        },
-  //        {
-  //          ...
-  //        }
-  //      ],
-  //
-  //      [
-  //        {
-  //          "name": "Piccolo Teatro Studio Melato, Milano",
-  //          "coords": [
-  //            45.4723771,
-  //            9.1829
-  //          ]
-  //        },
-  //        {
-  //          "name": "Teatro Franco Parenti, Milano",
-  //          "coords": [
-  //            45.4544416,
-  //            9.2059056
-  //          ]
-  //        },
-  //        {
-  //          ...
-  //        }
-  //      ]
-  //    ]
-  //
   // Siccome `result` è un array che contiene a sua volta altri array,
-  // è necessario "appiattirlo" con questa tecnica.
+  // è necessario "appiattirlo", e per farlo utilizzeremo la funzione `Array.reduce`.
   //
-  // La funzione `reduce` può essere invocata su un array. Ci permette di applicare
-  // una callback su ogni elemento dell'array, e di memorizzare il valore ritornato dalla
-  // callback in un contenitore, detto "accumulatore", che sarà ritornato quando la funzione
-  // sarà stata applicata a tutti gli elementi dell'array. L'accumulatore è il primo parametro,
-  // `accumulator`, e l'elemento corrente è il secondo, `currentElement`.
-  // Il risultato che sarà ritornato dalla funzione reduce sarà quindi il concatenamento di tutti
-  // gli array contenuti in `result`.
+  // `reduce` ci permette di applicare una callback su ogni elemento dell'array,
+  // e di memorizzare il valore ritornato dalla callback in un contenitore, detto "accumulatore",
+  // che sarà ritornato quando la funzione sarà stata applicata a tutti gli elementi dell'array.
+  //
+  // L'accumulatore è il primo parametro, `accumulator`, mentre l'elemento corrente è il
+  // secondo, `currentElement`.
+  // Il risultato che sarà ritornato dalla funzione `reduce` sarà quindi il concatenamento di tutti
+  // gli array contenuti in `result`. Lo memorizziamo nella variabile `venues`.
   var venues = result.reduce(function(accumulator, currentElement) {
     return accumulator.concat(currentElement);
   });
@@ -284,7 +278,7 @@ async.map(paths, fetchVenues, function(error, result) {
 
   // Per finire, usiamo la funzione `writeFile` di `fs` per scrivere il file.
   // Il primo argomento è il percorso del file (che sarà salvato nella
-  // stessa cartella di crawler.js). Il secondo argomento è il contenuto del file,
+  // stessa cartella di crawler.js). Il secondo argomento è il contenuto del file come stringa,
   // il terzo argomento è invece una funzione che viene eseguita alla fine della scrittura.
   // Utilizziamo questa funzione semplicemente per visualizzare un messaggio che ci conferma
   // l'avvenuta scrittura, oppure un eventuale problema.
@@ -296,4 +290,10 @@ async.map(paths, fetchVenues, function(error, result) {
 
     console.log(venues.length + ' venues have been written to venues.json!');
   });
-});
+}
+
+// Utilizzando la libreria async, metto in coda una serie di callback (che sono le mie
+// chiamate a `fetchVenues`). Quando tutte queste callback saranno state eseguite (una per ogni elemento
+// dell'array `urls`) ed avranno restituito un valore, verrà invocata la funzione passata
+// come terzo argomento, `saveVenues`.
+async.map(urls, fetchVenues, saveVenues);
