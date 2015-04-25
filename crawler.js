@@ -25,7 +25,7 @@ var fetchVenues = function(path, callback) {
       var latitude;
       var longitude;
 
-      addressLink = $('header > div.media-body > aside > div > a:nth-child(2)', element).attr('href');
+      addressLink = $('header .media-body aside a[data-target="#mdb_modal_mappa"]', element).attr('href');
       tokens = addressLink.split('?');
       tokens = tokens[1].split('&');
       latitude = tokens[0].split('=')[1];
