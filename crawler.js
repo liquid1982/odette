@@ -187,27 +187,26 @@ var fetchVenues = function(path, callback) {
       // Stessa storia per la longitudine.
 
       longitude = tokens[1].split('=')[1];
-      longitude = longitude[1];
 
       // A questo punto, memorizzo in `venue.coords` le informazioni che ho trovato.
       //
       // Per assicurarmi che l'array contenga dei valori numerici e non delle stringhe,
       // utilizzo la funzione `parseFloat`, che prende come argomento una stringa e restituisce
-      // un numero.
+      // un numero (preservando i decimali).
 
       venue.coords = [
         parseFloat(latitude),
         parseFloat(longitude)
       ];
 
-      // Come ultima operazione, inserisco all'interno dell'array `venues` il mio oggetto `venue`.
+      // Come ultima operazione, inserisco in coda all'array `venues` il mio oggetto `venue`.
 
       venues.push(venue);
     });
 
     // Dopo aver finito di ciclare sugli elementi, invoco la callback che viene passata alla funzione
-    // `fetchVenues`. In questo modo, comunico alla libreria `async` che ho terminato la
-    // mia operazione, passando come secondo argomento il risultato, che è il mio array `venues`.
+    // `fetchVenues`. In questo modo comunico alla libreria `async` che ho terminato la
+    // mia operazione. Passo come secondo argomento il risultato, che è il mio array `venues`.
 
     callback(null, venues);
   });
@@ -215,7 +214,7 @@ var fetchVenues = function(path, callback) {
 
 // Utilizzando la libreria async, metto in coda una serie di callback (che sono le mie
 // chiamate a `fetchVenues`). Quando tutte queste callback saranno state eseguite ed avranno
-// restituito un valore, verrà invocata funzione passata come terzo argomento ad `async.map`.
+// restituito un valore, verrà invocata la funzione passata come terzo argomento ad `async.map`.
 //
 // Questa callback viene invocata con due argomenti.
 // Il primo è `error`, e contiene un oggetto che rappresenta un eventuale errore oppure `undefined`
