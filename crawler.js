@@ -139,18 +139,18 @@ var fetchVenues = function(url, callback) {
       venue.name = cheerio('header h1 > a', element).text();
 
 
-      eventsLink = cheerio('.media-body aside a[href*="/eventi"]', element);
-
-      if (eventsLink.length) {
-        eventsLink = eventsLink.attr('href'); // "/milano/teatri/teatro_carcano/eventi"
-
-        var parsedUrl = urlLib.parse(url);
-        var fullUrl = parsedUrl.protocol + '//' + parsedUrl.host + eventsLink;
-
-        request(fullUrl, function(error, response, body) {
-          var elements = cheerio('#mdb_lista > article');
-        });
-      }
+      // eventsLink = cheerio('.media-body aside a[href*="/eventi"]', element);
+      //
+      // if (eventsLink.length) {
+      //   eventsLink = eventsLink.attr('href'); // "/milano/teatri/teatro_carcano/eventi"
+      //
+      //   var parsedUrl = urlLib.parse(url);
+      //   var fullUrl = parsedUrl.protocol + '//' + parsedUrl.host + eventsLink;
+      //
+      //   request(fullUrl, function(error, response, body) {
+      //     var elements = cheerio('#mdb_lista > article');
+      //   });
+      // }
 
       // Per le coordinate faremo un po' di lavoro in più.
       // Utilizzo ancora cheerio per trovare l'elemento HTML che contiene le coordinate.
