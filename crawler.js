@@ -130,11 +130,27 @@ var fetchVenues = function(url, callback) {
       // Definisco due variabili, `latitude` e `longitude`, in cui salverò questi valori.
       var latitude, longitude;
 
+      var eventsLink;
+
       // Per prima cosa salvo in `venue.name` il nome del teatro.
       // Utilizzo cheerio per trovare, tramite un selettore CSS, l'elemento HTML che
       // contiene il nome del teatro. Sul risultato della chiamta a cheerio, chiamo
       // il metodo `.text()` che mi restituisce il contenuto del nodo HTML.
       venue.name = cheerio('header h1 > a', element).text();
+
+
+      eventsLink = cheerio('.media-body aside a[href*="/eventi"]', element);
+
+      if (eventsLink.length) {
+        eventsLink = eventsLink.attr('href'); // "/milano/teatri/teatro_carcano/eventi"
+
+        var parsedUrl = urlLib.parse(url);
+        var fullUrl = parsedUrl.protocol + '//' + parsedUrl.host + eventsLink;
+
+        request(fullUrl, function(error, response, body) {
+          var elements = cheerio('#mdb_lista > article');
+        });
+      }
 
       // Per le coordinate faremo un po' di lavoro in più.
       // Utilizzo ancora cheerio per trovare l'elemento HTML che contiene le coordinate.

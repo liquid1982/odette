@@ -4,18 +4,25 @@
     <meta charset="utf-8">
     <title>Odette</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <link href="https://api.tiles.mapbox.com/mapbox.js/v2.1.6/mapbox.css" rel='stylesheet' />
+    <link href="https://api.tiles.mapbox.com/mapbox.js/v2.1.6/mapbox.css" rel="stylesheet" />
+    <link href="normalize.css" rel="stylesheet" />
+    <link href="ion.rangeSlider.css" rel="stylesheet" />
+    <link href="ion.rangeSlider.skinHTML5.css" rel="stylesheet" />
     <link href="application.css" rel="stylesheet" />
   </head>
   <body>
     <div id="main-menu"></div>
     <div id="map"></div>
-    <div id="date-selector"></div>
+    <div id="date-selector">
+      <input type="text" id="date-range" name="date-range" value="" />
+    </div>
     <div id="content">
       <h1>Welcome!</h1>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script src="https://api.tiles.mapbox.com/mapbox.js/v2.1.6/mapbox.js"></script>
+    <script src="ion.rangeSlider.js"></script>
+    <script src="moment.js"></script>
     <script src="application.js"></script>
   </body>
 </html>
