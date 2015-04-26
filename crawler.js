@@ -288,7 +288,7 @@ var saveVenues = function(error, result) {
       return;
     }
 
-    console.log(venues.length + ' venues have been written to venues.json!');
+    console.log(venues.length + ' venues were saved to venues.json!');
   });
 }
 
