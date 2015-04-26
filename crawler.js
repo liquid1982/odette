@@ -57,6 +57,11 @@ var async = require('async');
 // salvare il file JSON contenente l'elenco dei teatri.
 var fs = require('fs');
 
+// `url` ci permette di fare il parsing di una URL. Nel nostro esempio
+// utilizzeremo sia una tecnica "manuale" di estrazione di informazioni
+// da una URL (a scopo puramente didattico), sia questa libreria.
+var urlLib = require('url');
+
 /**
  * Sezione 2: Implementazione
  */
@@ -131,7 +136,7 @@ var fetchVenues = function(url, callback) {
       // il metodo `.text()` che mi restituisce il contenuto del nodo HTML.
       venue.name = cheerio('header h1 > a', element).text();
 
-      // Per le coordinate c'è da fare un po' di lavoro in più.
+      // Per le coordinate faremo un po' di lavoro in più.
       // Utilizzo ancora cheerio per trovare l'elemento HTML che contiene le coordinate.
       // Passo come primo argomento il selettore, e come secondo il nodo HTML che
       // contiene l'elemento.
@@ -199,6 +204,25 @@ var fetchVenues = function(url, callback) {
 
       // Stessa storia per la longitudine, che si trova in `tokens[1]`.
       longitude = tokens[1].split('=')[1];
+
+      // Estrarre informazioni da una URL è un compito molto ricorrente in programmazione
+      // web, e naturalmente in node.js esiste una libreria che ci evita tutto questo sbattimento
+      // di spezzettare le stringhe. Vediamo rapidamente come si usa.
+      //
+      // Invoco il metodo `parse` di `urlLib` (che è una istanza della libreria `url` di node.js),
+      // passando come primo parametro la URL (anche parziale), e come secondo parametro `true`.
+      var parsedURL = urlLib.parse(url + addressLink, true);
+
+      // La libreria ha quindi prodotto per me un oggetto che rappresenta la URL.
+      // Le informazioni di cui ho bisogno sono comodamente accessibili all'interno di `parsedURL.query`.
+      // Decommenta il `console.log` sottostante per vederle stampate durante l'esecuzione del crawler.
+      //
+      // console.log(
+      //   "Informations extracted with `url.parse`:",
+      //   parsedURL.query.Nome_Location,
+      //   parsedURL.query.Latitudine,
+      //   parsedURL.query.Longitudine
+      // );
 
       // A questo punto, memorizzo in `venue.coords` le informazioni che ho trovato.
       // Per assicurarmi che l'array contenga dei valori numerici e non delle stringhe,
