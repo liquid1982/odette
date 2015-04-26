@@ -12,6 +12,29 @@
  *   node crawler.js
  *
  * per salvare sul file `venues.json` la lista dei teatri.
+ *
+ * La struttura finale del file sarà:
+ *
+ *   {
+ *     "venues": [
+ *       {
+ *         "name": "Teatro Strehler, Milano",
+ *         "coords": [
+ *           45.4720884,
+ *           9.1825041
+ *         ]
+ *       },
+ *       {
+ *         "name": "Piccolo Teatro Studio Melato, Milano",
+ *         "coords": [
+ *           45.4723771,
+ *           9.1829
+ *         ]
+ *       },
+ *       ...
+ *     ]
+ *   }
+ *
  */
 
 /**
