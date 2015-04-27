@@ -49,6 +49,9 @@ var request = require('request');
 // utilizzando dei selettori CSS.
 var cheerio = require('cheerio');
 
+// `moment` è una libreria che ci aiuta a lavorare con le date.
+var moment = require('moment');
+
 // `async` è una libreria che ci permette di gestire le callback.
 // Più avanti nel file vedremo di cosa si tratta.
 var async = require('async');
@@ -130,27 +133,15 @@ var fetchVenues = function(url, callback) {
       // Definisco due variabili, `latitude` e `longitude`, in cui salverò questi valori.
       var latitude, longitude;
 
+      // Dichiaro una variabile `eventsLink` che mi servirà per memorizzare il link alla pagina eventi
+      // per il teatro corrente.
       var eventsLink;
 
       // Per prima cosa salvo in `venue.name` il nome del teatro.
       // Utilizzo cheerio per trovare, tramite un selettore CSS, l'elemento HTML che
       // contiene il nome del teatro. Sul risultato della chiamta a cheerio, chiamo
       // il metodo `.text()` che mi restituisce il contenuto del nodo HTML.
-      venue.name = cheerio('header h1 > a', element).text();
-
-
-      // eventsLink = cheerio('.media-body aside a[href*="/eventi"]', element);
-      //
-      // if (eventsLink.length) {
-      //   eventsLink = eventsLink.attr('href'); // "/milano/teatri/teatro_carcano/eventi"
-      //
-      //   var parsedUrl = urlLib.parse(url);
-      //   var fullUrl = parsedUrl.protocol + '//' + parsedUrl.host + eventsLink;
-      //
-      //   request(fullUrl, function(error, response, body) {
-      //     var elements = cheerio('#mdb_lista > article');
-      //   });
-      // }
+      venue.name = cheerio('header > .row h2', element).text();
 
       // Per le coordinate faremo un po' di lavoro in più.
       // Utilizzo ancora cheerio per trovare l'elemento HTML che contiene le coordinate.
@@ -249,14 +240,90 @@ var fetchVenues = function(url, callback) {
         parseFloat(longitude)
       ];
 
+      // Seleziono il link degli eventi.
+      eventsLink = cheerio('.media-body aside a[href*="/eventi"]', element);
+
+      // Siccome il link potrebbe non essere presente, utilizzo la proprietà `.length`
+      // di eventsLink che mi restituirà un valore diverso da 0 nel caso in cui, nell'elemento
+      // corrente, sia stato trovato questo link.
+      if (eventsLink.length) {
+        // Se trovato, lo completo aggiungendo le informazioni relative al protocollo e all'host
+        // che ho precedentemente memorizzato all'interno di `parsedURL`, e lo salvo come
+        // proprietà dell'oggetto `venue`.
+        venue.eventsURL = parsedURL.protocol + '//' + parsedURL.host + eventsLink.attr('href');
+      }
+
       // Come ultima operazione, inserisco in coda all'array `venues` il mio oggetto `venue`.
       venues.push(venue);
     });
 
-    // Dopo aver finito di ciclare sugli elementi, invoco la callback che viene passata alla funzione
-    // `fetchVenues`. In questo modo comunico alla libreria `async` che ho terminato la
-    // mia operazione. Passo come secondo argomento il risultato, che è il mio array `venues`.
-    callback(null, venues);
+    // Dopo aver ciclato sugli elementi, chiamo async.map passando tutte le venues trovate nella pagina,
+    // e su ciascuna di queste eseguirò una funzione che estrarrà da queste gli eventi presenti nella
+    // pagina contenuta in `eventsURL`.
+    async.map(venues, fetchEvents, function(error, result) {
+      // Quando async.map avrà finito di applicare le callback a tutte le mie venues, invocherò
+      // la callback passando il risultato finale (ossia tutte le venues con il payload degli eventi).
+      callback(null, result);
+    });
+  });
+}
+
+// Questa funzione sarà invocata per ciascuna venue, e avrà lo scopo di aggiungere un payload
+// `events` a tutte le venue che hanno una proprietà `eventsURL`.
+var fetchEvents = function(venue, callback) {
+  // Per prima cosa definisco una chiave `events`, inizializzata ad array vuoto.
+  venue.events = [];
+
+  // Se sulla venue non è settata la proprietà `eventsURL`, vuol dire che per questa venue non era
+  // presente nessun link agli eventi, quindi usciamo dalla funzione chiamando la callback, alla
+  // quale passiamo `null` come primo argomento per comunicare che non ci sono stati errori, e il
+  // nostro oggetto `venue` come secondo argomento.
+  if (!venue.eventsURL) {
+    callback(null, venue);
+    return;
+  }
+
+  // Memorizzo nella variabile `url` l'indirizzo della pagina degli eventi.
+  var url = venue.eventsURL;
+
+  // Elimino la proprietà eventsUrl, non avendone bisogno nel payload finale.
+  delete venue.eventsURL;
+
+  // A questo punto, possiamo procedere con la chiamata tramite `request`.
+  request(url, function(error, response, body) {
+    if (error) {
+      callback(error, venue);
+      return;
+    }
+
+    // Anche questa volta, cerchiamo tutti gli eventi con un selettore simile a quello
+    // utilizzato precedentemente.
+    var elements = cheerio('#mdb_lista > article', body);
+
+    // Ciascuno degli elementi trovati rappresenta un evento. Eseguiamo un ciclo su di essi per
+    // estrarre le proprietà che ci interessano.
+    elements.each(function(index, element) {
+      // Inizializzo una variabile `event` con un oggetto vuoto.
+      var event = {};
+      var startsAt, endsAt;
+
+      // Memorizzo alcune proprietà degli eventi che raggiungo con dei selettori CSS.
+      event.title = cheerio('header > .row h2', element).text();
+
+      // Salvo in `startsAt` ed `endsAt` le date di inizio e fine dell'evento.
+      startsAt = cheerio('meta[itemprop="startDate"]', element).attr('content');
+      endsAt = cheerio('meta[itemprop="endDate"]', element).attr('content');
+
+      // Uso `moment` per fare il parsing delle date e per trasformarle in un formato ISO.
+      event.startsAt = moment(startsAt).toISOString();
+      event.endsAt = moment(endsAt).toISOString();
+
+      // Al termine, inserisco il mio oggetto `event` all'interno di venue.events.
+      venue.events.push(event);
+    });
+
+    // Chiamo la callback per comunicare alla libreria `async` che ho terminato le operazioni.
+    callback(null, venue);
   });
 }
 
