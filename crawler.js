@@ -150,7 +150,7 @@ var fetchVenues = function(url, callback) {
       // Utilizzo cheerio per trovare, tramite un selettore CSS, l'elemento HTML che
       // contiene il nome del teatro. Sul risultato della chiamta a cheerio, chiamo
       // il metodo `.text()` che mi restituisce il contenuto del nodo HTML.
-      venue.name = cheerio('header > .row h2', element).text();
+      venue.name = cheerio('header > .row a', element).text();
 
       // Per le coordinate faremo un po' di lavoro in più.
       // Utilizzo ancora cheerio per trovare l'elemento HTML che contiene le coordinate.
@@ -317,7 +317,7 @@ var fetchEvents = function(venue, callback) {
       var startsAt, endsAt;
 
       // Memorizzo alcune proprietà degli eventi che raggiungo con dei selettori CSS.
-      event.title = cheerio('header > .row h2', element).text();
+      event.title = cheerio('header > .row a > span', element).text();
 
       // Salvo in `startsAt` ed `endsAt` le date di inizio e fine dell'evento.
       startsAt = cheerio('meta[itemprop="startDate"]', element).attr('content');
