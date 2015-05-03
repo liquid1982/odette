@@ -87,9 +87,15 @@ var urls = [
   'http://www.milanodabere.it/milano/teatri/5'
 ];
 
+// Utilizzando la libreria async, metto in coda una serie di callback (che sono le mie
+// chiamate a `fetchVenues`). Quando tutte queste callback saranno state eseguite (una per ogni elemento
+// dell'array `urls`) ed avranno restituito un valore, verrà invocata la funzione passata
+// come terzo argomento, `saveVenues`.
+async.map(urls, fetchVenues, saveVenues);
+
 // Definisco la funzione `fetchVenues`, che sarà eseguita su ciascuna delle pagine che
 // saranno visitate dal crawler. Sarà invocata con due parametri, `url` e `callback`.
-var fetchVenues = function(url, callback) {
+function fetchVenues(url, callback) {
   // Definisco un array vuoto `venues` all'interno del quale memorizzerò tutti i teatri
   // che troverò nella pagina corrente.
   var venues = [];
@@ -279,7 +285,7 @@ var fetchVenues = function(url, callback) {
 
 // Questa funzione sarà invocata per ciascuna venue, e avrà lo scopo di aggiungere un payload
 // `events` a tutte le venue che hanno una proprietà `eventsURL`.
-var fetchEvents = function(venue, callback) {
+function fetchEvents(venue, callback) {
   // Per prima cosa definisco una chiave `events`, inizializzata ad array vuoto.
   venue.events = [];
 
@@ -389,7 +395,7 @@ var fetchEvents = function(venue, callback) {
 //   ]
 //
 // ossia un array di array (anche detto "array bidimensionale").
-var saveVenues = function(error, result) {
+function saveVenues(error, result) {
   if (error) {
     console.log("Error fetching pages.", error);
     return;
@@ -430,9 +436,3 @@ var saveVenues = function(error, result) {
     console.log(venues.length + ' venues were saved to venues.json!');
   });
 }
-
-// Utilizzando la libreria async, metto in coda una serie di callback (che sono le mie
-// chiamate a `fetchVenues`). Quando tutte queste callback saranno state eseguite (una per ogni elemento
-// dell'array `urls`) ed avranno restituito un valore, verrà invocata la funzione passata
-// come terzo argomento, `saveVenues`.
-async.map(urls, fetchVenues, saveVenues);
