@@ -330,8 +330,8 @@ function fetchEvents(venue, callback) {
       endsAt = cheerio('meta[itemprop="endDate"]', element).attr('content');
 
       // Uso `moment` per fare il parsing delle date e per trasformarle in un formato ISO.
-      event.startsAt = moment(startsAt).toISOString();
-      event.endsAt = moment(endsAt).toISOString();
+      event.startsAt = moment.utc(startsAt).startOf('day').toISOString();
+      event.endsAt = moment.utc(endsAt).endOf('day').toISOString();
 
       // Al termine, inserisco il mio oggetto `event` all'interno di venue.events.
       venue.events.push(event);

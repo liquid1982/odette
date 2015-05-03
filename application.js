@@ -11,10 +11,9 @@ map.setView([45.464262, 9.190802], 14);
 
 var hasEvents = function(info) {
   return info['events'].length && info['events'].some(function(event) {
-    var start = new Date(event['startsAt']).getTime() > fromDate * 1000;
-    var end = new Date(event['endsAt']).getTime() < toDate * 1000;
+    var start = new Date(event['startsAt']).getTime();
 
-    return start && end;
+    return (start > fromDate * 1000) && (start < toDate * 1000);
   });
 }
 
