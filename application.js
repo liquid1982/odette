@@ -34,7 +34,7 @@ var setupMarkers = function(payloads) {
     var marker = L.marker(payload['coords']);
     marker.data = payload;
     marker.bindPopup('<b>' + payload['name'] + '</b>');
-    marker.on('click', function() { map.panTo(e.latlng); });
+    marker.on('click', function(e) { map.panTo(e.latlng); });
     markers.push(marker);
   });
 
