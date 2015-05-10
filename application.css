@@ -28,3 +28,7 @@ body {
 #content {
   padding: 10px;
 }
+
+#content h2.selected {
+  color: red;
+}

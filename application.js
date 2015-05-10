@@ -1,3 +1,5 @@
+'use strict';
+
 L.mapbox.accessToken = 'pk.eyJ1IjoibGlxdWlkMTk4MiIsImEiOiJCdmxWQkZNIn0.itcodaqRcLopL_0WP5Rjww';
 
 var map = L.mapbox.map('map', 'examples.map-i86nkdio');
@@ -7,7 +9,27 @@ var toDate = +moment().add(3, 'months').format('X');
 var minDate = +moment().subtract(2, 'months').format('X');
 var maxDate = +moment().add(6, 'months').format('X');
 
-map.setView([45.464262, 9.190802], 14);
+map.setView([45.464262, 9.190802], 12);
+
+$.getJSON('venues.json', function(data) {
+  venueMarkers = setupMarkers(data['venues'], markerCallback);
+  showVenues();
+});
+
+var setupMarkers = function(payloads, callback) {
+  var markers = [];
+
+  payloads.forEach(function(payload) {
+    var marker = L.marker(payload['coords']);
+
+    marker.bindPopup('<b>Nome: ' + payload['name'] + '</b>');
+    marker.data = payload;
+    marker.on('click', markerCallback);
+    markers.push(marker);
+  });
+
+  return markers;
+}
 
 var hasEvents = function(info) {
   return info['events'].length && info['events'].some(function(event) {
@@ -27,24 +49,15 @@ var showVenues = function() {
   });
 }
 
-var setupMarkers = function(payloads) {
-  var markers = [];
+var markerCallback = function(e) {
+  var data = e.target.data;
 
-  payloads.forEach(function(payload) {
-    var marker = L.marker(payload['coords']);
-    marker.data = payload;
-    marker.bindPopup('<b>' + payload['name'] + '</b>');
-    marker.on('click', function(e) { map.panTo(e.latlng); });
-    markers.push(marker);
-  });
+  map.panTo(e.latlng);
 
-  return markers;
+  console.log(data);
+
+  $('#content h2').text("Hai selezionato: " + data.name);
 }
-
-$.getJSON('venues.json', function(data) {
-  venueMarkers = setupMarkers(data['venues']);
-  showVenues();
-});
 
 var rangeSlider = $('#date-range').ionRangeSlider({
   type: 'double',
