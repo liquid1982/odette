@@ -4,6 +4,7 @@ L.mapbox.accessToken = 'pk.eyJ1IjoibGlxdWlkMTk4MiIsImEiOiJCdmxWQkZNIn0.itcodaqRc
 
 var map = L.mapbox.map('map', 'examples.map-i86nkdio');
 var venueMarkers = [];
+var currentMarker;
 var fromDate = +moment().format('X');
 var toDate = +moment().add(3, 'months').format('X');
 var minDate = +moment().subtract(2, 'months').format('X');
@@ -50,14 +51,44 @@ var showVenues = function() {
 }
 
 var markerCallback = function(e) {
+  currentMarker = e.target;
+
   var data = e.target.data;
+  var timeout = ($('#map').hasClass('small')) ? 0 : 1000;
 
-  map.panTo(e.latlng);
+  setTimeout(function() {
+    map.invalidateSize();
+    map.panTo(e.latlng);
+  }, timeout);
 
-  console.log(data);
+  $('#map').addClass('small');
+  $('#content ul').remove();
 
+  var html = "<ul>";
+
+  data.events.forEach(function(event, i) {
+    html += "<li>" + event['title'] + "</li>";
+  });
+
+  html += "</ul>";
+
+  $('#content h2').addClass('selected');
   $('#content h2').text("Hai selezionato: " + data.name);
+  $('#content').append(html);
 }
+
+$('#back').on('click', function(e) {
+  $('#map').removeClass('small');
+  $('#content h2').text('Welcome!');
+  $('#content h2').removeClass('selected');
+  $('#content ul').remove();
+
+  setTimeout(function() {
+    var coords = currentMarker.getLatLng();
+    map.invalidateSize();
+    map.panTo([coords.lat, coords.lng]);
+  }, 1000);
+});
 
 var rangeSlider = $('#date-range').ionRangeSlider({
   type: 'double',

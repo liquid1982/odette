@@ -17,12 +17,35 @@ body {
 
 #map {
   height: 350px;
+  transition: all 1s;
+}
+
+#map.small {
+  height: 250px;
+}
+
+#back {
+  opacity: 0;
+  transition: all 1s;
+  position: absolute;
+  top: 15px;
+  right: 10px;
+}
+
+#map.small + #back {
+  opacity: 1;
 }
 
 #date-selector {
   height: 50px;
   padding: 10px;
   background-color: #eee;
+}
+
+.status-container {
+  font-size: 12px;
+  padding: 5px 10px;
+  text-align: right;
 }
 
 #content {
