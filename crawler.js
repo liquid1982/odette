@@ -156,13 +156,13 @@ function fetchVenues(url, callback) {
       // Utilizzo cheerio per trovare, tramite un selettore CSS, l'elemento HTML che
       // contiene il nome del teatro. Sul risultato della chiamta a cheerio, chiamo
       // il metodo `.text()` che mi restituisce il contenuto del nodo HTML.
-      venue.name = cheerio('header > .row a', element).text();
+      venue.name = cheerio('header .row a', element).text();
 
       // Per le coordinate faremo un po' di lavoro in più.
       // Utilizzo ancora cheerio per trovare l'elemento HTML che contiene le coordinate.
       // Passo come primo argomento il selettore, e come secondo il nodo HTML che
       // contiene l'elemento.
-      addressLink = cheerio('header .media-body aside a[data-target="#mdb_modal_mappa"]', element);
+      addressLink = cheerio('a[data-target="#mdb_modal_mappa"]', element);
 
       // Una volta trovato l'elemento, riassegno alla variabile addressLink il contenuto
       // del suo attributo `href`.
@@ -256,7 +256,7 @@ function fetchVenues(url, callback) {
       ];
 
       // Seleziono il link degli eventi.
-      eventsLink = cheerio('.media-body aside a[href*="/eventi"]', element);
+      eventsLink = cheerio('a[href*="/eventi"]', element);
 
       // Siccome il link potrebbe non essere presente, utilizzo la proprietà `.length`
       // di eventsLink che mi restituirà un valore diverso da 0 nel caso in cui, nell'elemento
@@ -323,7 +323,7 @@ function fetchEvents(venue, callback) {
       var startsAt, endsAt;
 
       // Memorizzo alcune proprietà degli eventi che raggiungo con dei selettori CSS.
-      event.title = cheerio('header > .row a > span', element).text();
+      event.title = cheerio('a[href*="/spettacoli"] span', element).text();
 
       // Salvo in `startsAt` ed `endsAt` le date di inizio e fine dell'evento.
       startsAt = cheerio('meta[itemprop="startDate"]', element).attr('content');
